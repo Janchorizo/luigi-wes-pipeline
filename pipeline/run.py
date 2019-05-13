@@ -1,5 +1,4 @@
 import luigi
-from luigi.contrib import ExternalProgramTask
 from os import path
 
 # Utility clases
@@ -15,7 +14,8 @@ class Pipeline(luigi.WrapperTask):
 if __name__ == '__main__':
     luigi.run(['Pipeline', 
             '--ReferenceGenome-ref-url', 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit',
-            '--ReferenceGenome-from2bit', True,
+            '--workers', '2',
+            '--ReferenceGenome-from2bit', 'True',
             '--GlobalParams-base-dir', path.abspath(path.curdir),
             '--GlobalParams-log-dir', path.abspath(path.curdir),
             '--GlobalParams-exp-name', 'get_ref_genome'])

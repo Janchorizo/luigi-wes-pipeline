@@ -1,5 +1,5 @@
 import luigi
-from luigi.contrib import ExternalProgramTask
+from luigi.contrib.external_program import ExternalProgramTask
 
 class GlobalParams(luigi.Config):
     exp_name = luigi.Parameter()
