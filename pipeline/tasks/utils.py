@@ -1,6 +1,11 @@
 import luigi
 from luigi.contrib import ExternalProgramTask
 
+class GlobalParams(luigi.Config):
+    exp_name = luigi.Parameter()
+    log_dir = luigi.Parameter()
+    base_dir = luigi.Parameter()
+
 class MetaOutputHandler:
     def output(self):
         return {key: task for key,task in self.input().items()}
