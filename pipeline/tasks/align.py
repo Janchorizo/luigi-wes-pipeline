@@ -1,17 +1,17 @@
 import luigi
 from luigi.contrib.external_program import ExternalProgramTask
 from os import path
-from .utils import MetaOutputHandler
-from .utils import Wget
-from .utils import GlobalParams
+from tasks.utils import MetaOutputHandler
+from tasks.utils import Wget
+from tasks.utils import GlobalParams
 
-from .reference import ReferenceGenome
-from .fastq import Fastq
+from tasks.reference import ReferenceGenome
+from tasks.fastq import GetFastq
 
 class BwaAlignFastq(ExternalProgramTask):
     def requires(self): 
         return {
-            'reference' : GetReference(),
+            'reference' : ReferenceGenome(),
             'fastq' : GetFastq()
         }
 
@@ -26,21 +26,21 @@ class BwaAlignFastq(ExternalProgramTask):
 
         args = ['bwa', 'mem', '-M', '-R', rg,
             '-t', FastqAlign().cpus,
-            self.input()['reference']['fa'].path,
+            self.input()['reference']['fa']['fa'].path,
             self.input()['fastq']['fastq1'].path,
             ]
 
-        if 'fastq2' in self.input()['fastq']:
-            args.push(self.input()['fastq']['fastq2'].path)
+        if 'fastq_2' in self.input()['fastq']:
+            args.append(self.input()['fastq']['fastq2'].path)
 
-        args.push('-o')
-        args.push(self.output().path)
+        args.append('-o')
+        args.append(self.output().path)
 
         return args
 
 class FastqAlign(MetaOutputHandler, luigi.WrapperTask):
     create_report = luigi.Parameter(default='')
-    cpus = luigi.Parameter()
+    cpus = luigi.Parameter(default='')
 
     def requires(self):
         return {
@@ -48,9 +48,15 @@ class FastqAlign(MetaOutputHandler, luigi.WrapperTask):
             }
 
 if __name__ == '__main__':
-    luigi.run(['FastqAlign',
-            '--FastqAlign-cpus', '6', 
-            '--FastqAlign-create-report', 'True', 
-            '--GlobalParams-base-dir', path.abspath(path.curdir),
+    luigi.run(['FastqAlign', 
+            '--FastqAlign-create-report', 'False',
+            '--FastqAlign-cpus', '8',
+            '--GetFastq-fastq1-url', '',
+            '--GetFastq-fastq2-url', '',
+            '--GetFastq-from-ebi', 'False',
+            '--GetFastq-paired-end', 'False',
+            '--ReferenceGenome-ref-url', 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit',
+            '--ReferenceGenome-from2bit', 'True',
+            '--GlobalParams-base-dir', path.abspath('./experiment'),
             '--GlobalParams-log-dir', path.abspath(path.curdir),
-            '--GlobalParams-exp-name', 'get_ref_genome'])
+            '--GlobalParams-exp-name', 'hg19'])

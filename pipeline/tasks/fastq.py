@@ -1,9 +1,9 @@
 import luigi
 from luigi.contrib.external_program import ExternalProgramTask
 from os import path
-from .utils import MetaOutputHandler
-from .utils import Wget
-from .utils import GlobalParams
+from tasks.utils import MetaOutputHandler
+from tasks.utils import Wget
+from tasks.utils import GlobalParams
 
 class GetEbiFastqgz(luigi.Task):
     accession = luigi.Parameter()
@@ -28,25 +28,25 @@ class GetEbiFastqgz(luigi.Task):
 
         return "".join([root,dir1,dir2,filename])
 
-class Fastq(MetaOutputHandler, luigi.WrapperTask):
-    fastq_2_url = luigi.Parameter(default='')
-    fastq_1_url = luigi.Parameter(default='')
+class GetFastq(MetaOutputHandler, luigi.WrapperTask):
+    fastq2_url = luigi.Parameter(default='')
+    fastq1_url = luigi.Parameter(default='')
     from_ebi = luigi.Parameter(default='')
     paired_end = luigi.Parameter(default='')
 
     def requires(self):
-        dependencies = {'fastq1' : Wget(url=self.fastq1_url, output_file=)}
+        dependencies = {'fastq1' : Wget(url=self.fastq1_url, output_file=path.join(GlobalParams().base_dir, 'hg19_1.fastq'))}
         if self.paired_end == 'True':
-            dependencies.update({ 'fastq2' : Wget(url=self.fastq2_url, output_file=)})
+            dependencies.update({ 'fastq2' : Wget(url=self.fastq2_url, output_file=path.join(GlobalParams().base_dir, 'hg19_2.fastq'))})
 
         return dependencies
 
 if __name__ == '__main__':
-    luigi.run(['ReferenceGenome', 
+    luigi.run(['GetFastq', 
             '--GetFastq-fastq1-url', '',
-            '--GetFastq-fastq1-url', '',
-            '--GetFastq-fastq1-from-ebi', 'False',
-            '--GetFastq-fastq1-paired-end', 'True',
-            '--GlobalParams-base-dir', path.abspath(path.curdir),
+            '--GetFastq-fastq2-url', '',
+            '--GetFastq-from-ebi', 'False',
+            '--GetFastq-paired-end', 'False',
+            '--GlobalParams-base-dir', path.abspath('./experiment'),
             '--GlobalParams-log-dir', path.abspath(path.curdir),
-            '--GlobalParams-exp-name', 'getfastaq'])
+            '--GlobalParams-exp-name', 'hg19'])

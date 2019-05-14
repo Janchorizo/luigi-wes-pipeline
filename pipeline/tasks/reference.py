@@ -108,4 +108,4 @@ if __name__ == '__main__':
             '--ReferenceGenome-from2bit', 'True',
             '--GlobalParams-base-dir', path.abspath(path.curdir),
             '--GlobalParams-log-dir', path.abspath(path.curdir),
-            '--GlobalParams-exp-name', 'get_ref_genome'])
+            '--GlobalParams-exp-name', 'hg19'])
