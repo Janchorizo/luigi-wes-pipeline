@@ -13,8 +13,8 @@ class Pipeline(luigi.WrapperTask):
 
 if __name__ == '__main__':
     luigi.run(['Pipeline', 
-            '--ReferenceGenome-ref-url', 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit',
             '--workers', '2',
+            '--ReferenceGenome-ref-url', 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit',
             '--ReferenceGenome-from2bit', 'True',
             '--GlobalParams-base-dir', path.abspath(path.curdir),
             '--GlobalParams-log-dir', path.abspath(path.curdir),
