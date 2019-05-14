@@ -28,7 +28,7 @@ class GetEbiFastqgz(luigi.Task):
 
         return "".join([root,dir1,dir2,filename])
 
-class GetFastq(MetaOutputHandler, luigi.WrapperTask):
+class Fastq(MetaOutputHandler, luigi.WrapperTask):
     fastq_2_url = luigi.Parameter(default='')
     fastq_1_url = luigi.Parameter(default='')
     from_ebi = luigi.Parameter(default='')
