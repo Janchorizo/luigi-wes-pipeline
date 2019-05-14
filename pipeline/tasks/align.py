@@ -5,8 +5,8 @@ from .utils import MetaOutputHandler
 from .utils import Wget
 from .utils import GlobalParams
 
-from .reference import GetReference
-from .fastq import GetFastq
+from .reference import ReferenceGenome
+from .fastq import Fastq
 
 class BwaAlignFastq(ExternalProgramTask):
     def requires(self): 
@@ -25,13 +25,13 @@ class BwaAlignFastq(ExternalProgramTask):
         rg = '@RG\\tID:'+name+'\\tSM:'+name+'\\tPL:illumina'
 
         args = ['bwa', 'mem', '-M', '-R', rg,
-            '-t', GlobalParams().cpus,
+            '-t', FastqAlign().cpus,
             self.input()['reference']['fa'].path,
-            self.input()['fastq']['fastq_1'].path,
+            self.input()['fastq']['fastq1'].path,
             ]
 
-        if 'fastq_2' in self.input()['fastq']:
-            args.push(self.input()['fastq']['fastq_2'].path)
+        if 'fastq2' in self.input()['fastq']:
+            args.push(self.input()['fastq']['fastq2'].path)
 
         args.push('-o')
         args.push(self.output().path)
@@ -39,7 +39,8 @@ class BwaAlignFastq(ExternalProgramTask):
         return args
 
 class FastqAlign(MetaOutputHandler, luigi.WrapperTask):
-    create_inform = luigi.Parameter(default='')
+    create_report = luigi.Parameter(default='')
+    cpus = luigi.Parameter()
 
     def requires(self):
         return {
@@ -47,9 +48,9 @@ class FastqAlign(MetaOutputHandler, luigi.WrapperTask):
             }
 
 if __name__ == '__main__':
-    luigi.run(['ReferenceGenome', 
-            '--ReferenceGenome-ref-url', 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit',
-            '--ReferenceGenome-from2bit', 'True',
+    luigi.run(['FastqAlign',
+            '--FastqAlign-cpus', '6', 
+            '--FastqAlign-create-report', 'True', 
             '--GlobalParams-base-dir', path.abspath(path.curdir),
             '--GlobalParams-log-dir', path.abspath(path.curdir),
             '--GlobalParams-exp-name', 'get_ref_genome'])
