@@ -23,7 +23,7 @@ class PlatypusCallVariants(ExternalProgramTask):
     def program_args(self):
         return ['platypus', 'callVariants', 
             '--bamFiles='+self.input()['process']['bamNoDup']['bam'].path, 
-            '--refFile='+self.input()['reference']['fa'].path, 
+            '--refFile='+self.input()['reference']['fa']['fa'].path, 
             '--output='+self.output().path,
         ]
 
@@ -41,9 +41,9 @@ class FreebayesCallVariants(ExternalProgramTask):
 
     def program_args(self):
         return ['freebayes', 
-            '-f', self.input()['reference']['fa'].path,
+            '-f', self.input()['reference']['fa']['fa'].path,
             '--bam', self.input()['process']['bamNoDup']['bam'].path,
-            '--vfc', self.output().path
+            '--vcf', self.output().path
         ]
 
 class SamtoolsCallVariants(ExternalProgramTask):
@@ -60,7 +60,7 @@ class SamtoolsCallVariants(ExternalProgramTask):
 
     def program_args(self):
         return [
-            self.input()['reference']['fa'].path,
+            self.input()['reference']['fa']['fa'].path,
             self.input()['process']['bamNoDup']['bam'].path,
             self.output().path
         ]
@@ -79,7 +79,7 @@ class GatkCallVariants(ExternalProgramTask):
 
     def program_args(self):
         return [
-            self.input()['reference']['fa'].path,
+            self.input()['reference']['fa']['fa'].path,
             self.input()['process']['bamNoDup']['bam'].path,
             self.output().path
         ]
@@ -98,7 +98,7 @@ class DeepcallingCallVariants(ExternalProgramTask):
 
     def program_args(self):
         return [
-            self.input()['reference']['fa'].path,
+            self.input()['reference']['fa']['fa'].path,
             self.input()['process']['bamNoDup']['bam'].path,
             self.output().path
         ]
@@ -132,18 +132,18 @@ class VariantCalling(MetaOutputHandler, luigi.WrapperTask):
 
 if __name__ == '__main__':
     luigi.run(['VariantCalling', 
-            '--VariantCalling-use_platypus', 'true',
-            '--VariantCalling-use_freebayes', 'true',
-            '--VariantCalling-use_samtools', 'false',
-            '--VariantCalling-use_gatk', 'false',
-            '--VariantCalling-use_deepcalling', 'false',
+            '--VariantCalling-use-platypus', 'true',
+            '--VariantCalling-use-freebayes', 'true',
+            '--VariantCalling-use-samtools', 'false',
+            '--VariantCalling-use-gatk', 'false',
+            '--VariantCalling-use-deepcalling', 'false',
             '--AlignProcessing-cpus', '6',
             '--FastqAlign-cpus', '6', 
             '--FastqAlign-create-report', 'True', 
             '--GetFastq-fastq1-url', '',
-            '--GetFastq-fastq1-url', '',
-            '--GetFastq-fastq1-from-ebi', 'False',
-            '--GetFastq-fastq1-paired-end', 'True',
+            '--GetFastq-fastq2-url', '',
+            '--GetFastq-from-ebi', 'False',
+            '--GetFastq-paired-end', 'True',
             '--ReferenceGenome-ref-url', 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit',
             '--ReferenceGenome-from2bit', 'True',
             '--GlobalParams-base-dir', path.abspath(path.curdir),
