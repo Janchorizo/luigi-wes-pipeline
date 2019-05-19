@@ -77,8 +77,16 @@ class AlignProcessing(MetaOutputHandler, luigi.WrapperTask):
             }
 
 if __name__ == '__main__':
-    luigi.run(['ReferenceGenome', 
+    luigi.run(['AlignProcessing', 
             '--AlignProcessing-cpus', '6',
+            '--FastqAlign-cpus', '6', 
+            '--FastqAlign-create-report', 'True', 
+            '--GetFastq-fastq1-url', '',
+            '--GetFastq-fastq1-url', '',
+            '--GetFastq-fastq1-from-ebi', 'False',
+            '--GetFastq-fastq1-paired-end', 'True',
+            '--ReferenceGenome-ref-url', 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit',
+            '--ReferenceGenome-from2bit', 'True',
             '--GlobalParams-base-dir', path.abspath(path.curdir),
             '--GlobalParams-log-dir', path.abspath(path.curdir),
-            '--GlobalParams-exp-name', 'get_ref_genome'])
+            '--GlobalParams-exp-name', 'hg19'])
