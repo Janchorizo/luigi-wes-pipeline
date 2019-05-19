@@ -18,7 +18,7 @@ class PlatypusCallVariants(ExternalProgramTask):
     def output(self):
         return luigi.LocalTarget(
             path.join(GlobalParams().base_dir,
-            GlobalParams().exp_name+'.vcf'))
+            GlobalParams().exp_name+'_platypus.vcf'))
 
     def program_args(self):
         return ['platypus', 'callVariants', 
@@ -27,12 +27,125 @@ class PlatypusCallVariants(ExternalProgramTask):
             '--output='+self.output().path,
         ]
 
-class Vcf(MetaOutputHandler, luigi.WrapperTask):
+class FreebayesCallVariants(ExternalProgramTask):
     def requires(self):
-        return PlatypusCallVariants()
+        return {
+            'reference' : ReferenceGenome(),
+            'process' : AlignProcessing()
+        }
+
+    def output(self):
+        return luigi.LocalTarget(
+            path.join(GlobalParams().base_dir,
+            GlobalParams().exp_name+'_freebayes.vcf'))
+
+    def program_args(self):
+        return ['freebayes', 
+            '-f', self.input()['reference']['fa'].path,
+            '--bam', self.input()['process']['bamNoDup']['bam'].path,
+            '--vfc', self.output().path
+        ]
+
+class SamtoolsCallVariants(ExternalProgramTask):
+    def requires(self):
+        return {
+            'reference' : ReferenceGenome(),
+            'process' : AlignProcessing()
+        }
+
+    def output(self):
+        return luigi.LocalTarget(
+            path.join(GlobalParams().base_dir,
+            GlobalParams().exp_name+'_samtools.vcf'))
+
+    def program_args(self):
+        return [
+            self.input()['reference']['fa'].path,
+            self.input()['process']['bamNoDup']['bam'].path,
+            self.output().path
+        ]
+
+class GatkCallVariants(ExternalProgramTask):
+    def requires(self):
+        return {
+            'reference' : ReferenceGenome(),
+            'process' : AlignProcessing()
+        }
+
+    def output(self):
+        return luigi.LocalTarget(
+            path.join(GlobalParams().base_dir,
+            GlobalParams().exp_name+'_gatk.vcf'))
+
+    def program_args(self):
+        return [
+            self.input()['reference']['fa'].path,
+            self.input()['process']['bamNoDup']['bam'].path,
+            self.output().path
+        ]
+
+class DeepcallingCallVariants(ExternalProgramTask):
+    def requires(self):
+        return {
+            'reference' : ReferenceGenome(),
+            'process' : AlignProcessing()
+        }
+
+    def output(self):
+        return luigi.LocalTarget(
+            path.join(GlobalParams().base_dir,
+            GlobalParams().exp_name+'_deepcalling.vcf'))
+
+    def program_args(self):
+        return [
+            self.input()['reference']['fa'].path,
+            self.input()['process']['bamNoDup']['bam'].path,
+            self.output().path
+        ]
+
+class VariantCalling(MetaOutputHandler, luigi.WrapperTask):
+    use_platypus = luigi.Parameter(default="")
+    use_freebayes = luigi.Parameter(default="")
+    use_samtools = luigi.Parameter(default="")
+    use_gatk = luigi.Parameter(default="")
+    use_deepcalling = luigi.Parameter(default="")
+
+    def requires(self):
+        methods = dict()
+        if self.use_platypus == 'true':
+            methods.update({'platypus': PlatypusCallVariants()})
+
+        if self.use_freebayes == 'true':
+            methods.update({'freebayes': FreebayesCallVariants()})
+
+        if self.use_samtools == 'true':
+            methods.update({'samtools': SamtoolsCallVariants()})
+
+        if self.use_gatk == 'true':
+            methods.update({'gatk': GatkCallVariants()})
+
+        if self.use_deepcalling == 'true':
+            methods.update({'deepcalling': DeepcallingCallVariants()})
+
+        return methods
+
 
 if __name__ == '__main__':
-    luigi.run(['Vcf', 
+    luigi.run(['VariantCalling', 
+            '--VariantCalling-use_platypus', 'true',
+            '--VariantCalling-use_freebayes', 'true',
+            '--VariantCalling-use_samtools', 'false',
+            '--VariantCalling-use_gatk', 'false',
+            '--VariantCalling-use_deepcalling', 'false',
+            '--AlignProcessing-cpus', '6',
+            '--FastqAlign-cpus', '6', 
+            '--FastqAlign-create-report', 'True', 
+            '--GetFastq-fastq1-url', '',
+            '--GetFastq-fastq1-url', '',
+            '--GetFastq-fastq1-from-ebi', 'False',
+            '--GetFastq-fastq1-paired-end', 'True',
+            '--ReferenceGenome-ref-url', 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit',
+            '--ReferenceGenome-from2bit', 'True',
             '--GlobalParams-base-dir', path.abspath(path.curdir),
             '--GlobalParams-log-dir', path.abspath(path.curdir),
-            '--GlobalParams-exp-name', 'getfastaq'])
+            '--GlobalParams-exp-name', 'hg19'])
