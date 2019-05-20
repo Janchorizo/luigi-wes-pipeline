@@ -146,6 +146,6 @@ if __name__ == '__main__':
             '--GetFastq-paired-end', 'True',
             '--ReferenceGenome-ref-url', 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit',
             '--ReferenceGenome-from2bit', 'True',
-            '--GlobalParams-base-dir', path.abspath(path.curdir),
+            '--GlobalParams-base-dir', './experiment',
             '--GlobalParams-log-dir', path.abspath(path.curdir),
             '--GlobalParams-exp-name', 'hg19'])
