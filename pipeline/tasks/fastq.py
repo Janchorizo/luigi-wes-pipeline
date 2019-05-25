@@ -28,16 +28,37 @@ class GetEbiFastqgz(luigi.Task):
 
         return "".join([root,dir1,dir2,filename])
 
+class UncompressFastqgz(ExternalProgramTask):
+    fastq_url = luigi.Parameter(default='')
+    output_file = luigi.Parameter(default='')
+
+    def requires(self):
+        return Wget(url=self.fastq_url, output_file=self.output_file + '.gz')
+
+    def output(self):
+        return luigi.LocalTarget(self.output_file)
+
+    def program_args(self):
+        return ['gunzip', '-d', self.input().path]
+
 class GetFastq(MetaOutputHandler, luigi.WrapperTask):
     fastq2_url = luigi.Parameter(default='')
     fastq1_url = luigi.Parameter(default='')
     from_ebi = luigi.Parameter(default='')
     paired_end = luigi.Parameter(default='')
+    gz_compressed = luigi.Parameter(default='')
 
     def requires(self):
-        dependencies = {'fastq1' : Wget(url=self.fastq1_url, output_file=path.join(GlobalParams().base_dir, 'hg19_1.fastq'))}
+        if self.gz_compressed == 'True':
+            dependencies = {'fastq1' : UncompressFastqgz(fastq_url=self.fastq1_url, output_file=path.join(GlobalParams().base_dir, 'hg19_1.fastq'))}
+        else:
+            dependencies = {'fastq1' : Wget(url=self.fastq1_url, output_file=path.join(GlobalParams().base_dir, 'hg19_1.fastq'))}
+
         if self.paired_end == 'True':
-            dependencies.update({ 'fastq2' : Wget(url=self.fastq2_url, output_file=path.join(GlobalParams().base_dir, 'hg19_2.fastq'))})
+            if self.gz_compressed == 'True':
+                dependencies.update({ 'fastq2' : UncompressFastqgz(fastq_url=self.fastq2_url, output_file=path.join(GlobalParams().base_dir, 'hg19_2.fastq'))})
+            else:
+                dependencies.update({ 'fastq2' : Wget(url=self.fastq2_url, output_file=path.join(GlobalParams().base_dir, 'hg19_2.fastq'))})
 
         return dependencies
 

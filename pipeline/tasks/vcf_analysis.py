@@ -1,3 +1,4 @@
+import itertools
 import luigi
 from luigi.contrib.external_program import ExternalProgramTask
 from os import path
@@ -19,7 +20,7 @@ class VcftoolsCompare(ExternalProgramTask):
 
         return luigi.LocalTarget(
             path.join(GlobalParams().base_dir,
-            ''.join(filename(self.vcf1), filename(self.vcf2), '.txt')))
+            ''.join([filename(self.vcf1), '_vs_', filename(self.vcf2)])))
 
     def program_args(self):
         return ['vcftools',
@@ -27,6 +28,8 @@ class VcftoolsCompare(ExternalProgramTask):
             self.vcf1,
             '--diff',
             self.vcf2,
+            '--not-chr',
+            '--diff-site',
             '--out',
             self.output().path
         ]
@@ -55,19 +58,14 @@ class VariantCallingAnalysis(luigi.Task):
     def outputs(self):
         output = [vcf.path.replace('.vcf','vcf_info') for vcf in self.input().values()]
 
-        if len(self.input()) > 1:
-            for vcf1,vcf2 in itertools.combinations(self.input().values(),2):
-                output.append(VcftoolsCompare(vcf1=vcf1.path, vcf2=vcf2.path))
-
         return output
 
     def run(self):
-        yield (VcftoolsAnalysis(vcf=vcf.path) for vcf in self.input().values())
-
+        #yield((VcftoolsAnalysis(vcf=vcf.path) for vcf in self.input().values()))
         if len(self.input()) > 1:
-            yield (VcftoolsCompare(vcf1=vcf1.path, vcf2=vcf2.path) \
-                    for vcf1,vcf2 in itertools.combinations(self.input().values(),2))
-
+            yield((VcftoolsCompare(vcf1=vcf1.path, vcf2=vcf2.path) \
+                for vcf1,vcf2 in itertools.combinations(self.input().values(),2)))
+    
 
 if __name__ == '__main__':
     luigi.run(['VariantCallingAnalysis', 
